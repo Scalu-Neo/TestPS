@@ -1,6 +1,6 @@
 import mongoose, {Document, Schema } from 'mongoose';
 
-export interface IAddress extends Document {
+export interface IAddress extends Document  {
     cep: string;
     bairro: string;
     localidade: string;
