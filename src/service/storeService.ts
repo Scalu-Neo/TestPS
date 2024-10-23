@@ -4,6 +4,7 @@ import { AddressModel, IAddress } from "../model/addressModel";
 import storeRepository from "../repository/storeRepository";
 import AppError from "../utils/appError";
 
+
 export const createStore = async(data: {name: string; cep: string}) => {
     
     const {name, cep} = data;
@@ -13,17 +14,27 @@ export const createStore = async(data: {name: string; cep: string}) => {
         throw new AppError("Erro ao buscar endereço por meio do CEP", 404);
     }
 
-    const addressData: unknown = await response.json();
+    const addressData: any = await response.json();
+    const {cep: addressCep, bairro, localidade, logradouro, estado } = addressData;
 
-    if(!addressData){
-        throw new AppError("CEP inválido", 404);
+    if(!addressData || !bairro || !localidade || !logradouro || !estado){
+        throw new AppError("CEP inválido ou dados de endereço incompletos", 404);
     }
 
-    const newStore = new StoreModel({
-        name, 
-        address: addressData,
-    });
+    const newAddress: IAddress = {
+        cep: addressCep,
+        bairro,
+        localidade,
+        logradouro,
+        estado,
+        
+    } as IAddress;
 
-    await newStore.create();
-    return newStore;
+    const newStore: IStore = {
+        name, 
+        address: newAddress,
+    } as IStore;
+
+    return await storeRepository.create(newStore, null, null);
+
 }
